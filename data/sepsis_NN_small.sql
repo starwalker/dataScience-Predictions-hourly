@@ -1,0 +1,125 @@
+
+SELECT TOP 100000
+       iplv. [PAT_ENC_CSN_ID]
+	   ,iplv.[AVAILABLE_TIME]
+      ,[AGE]
+      ,[AdmissionsSixMonths]
+      ,[MaxPreviousLOS]
+      ,[ICUSixMonths]
+      ,[PCPSixMonths]
+      ,[SurgerySixMonths]
+      ,[VenilatorSixMonths]
+      ,[GLUCOSE, WHOLE BLOOD]
+      ,[HEMOLYSIS INDEX]
+      ,[SODIUM]
+      ,[POTASSIUM]
+      ,[GLUCOSE]
+      ,[CREATININE]
+      ,[CHLORIDE]
+      ,[CALCIUM]
+      ,[CO2 CONTENT (BICARBONATE)]
+      ,[UREA NITROGEN, BLOOD (BUN)]
+      ,[ANION GAP]
+      ,[HEMATOCRIT]
+      ,[HEMOGLOBIN]
+      ,[PLATELET COUNT]
+      ,[RED BLOOD CELL COUNT]
+      ,[MEAN CORPUSCULAR HEMOGLOBIN]
+      ,[MEAN CORPUSCULAR HEMOGLOBIN CONC]
+      ,[MEAN CORPUSCULAR VOLUME]
+      ,[WHITE BLOOD CELL COUNT]
+      ,[RED CELL DISTRIBUTION WIDTH]
+      ,[MEAN PLATELET VOLUME]
+      ,[ICTERIC INDEX]
+      ,[MAGNESIUM]
+      ,[NUCLEATED RED BLOOD CELLS]
+      ,[PHOSPHORUS (PO4)]
+      ,[EGFR]
+      ,[BILIRUBIN, TOTAL]
+      ,[TOTAL PROTEIN]
+      ,[ALBUMIN]
+      ,[ASPARTATE AMINOTRANSFERASE (AST)(SGOT)]
+      ,[ALKALINE PHOSPHATASE]
+      ,[ALANINE AMINOTRANSFERASE (ALT)(SGPT)]
+      ,[FIO2, ARTERIAL]
+      ,[PO2 (CORR), ARTERIAL]
+      ,[pH (CORR), ARTERIAL]
+      ,[BICARB, ARTERIAL]
+      ,[PCO2 (CORR), ARTERIAL]
+      ,[BASE, ARTERIAL]
+      ,[O2 SAT, ARTERIAL]
+      ,[TOTAL CO2, ARTERIAL]
+      ,[PT TEMP (CORR), ARTERIAL]
+      ,[PROTHROMBIN TIME]
+      ,[INR]
+      ,[NEUTROPHILS ABSOLUTE COUNT]
+      ,[MONOCYTES RELATIVE PERCENT]
+      ,[LYMPHOCYTES ABSOLUTE COUNT]
+      ,[NEUTROPHILS RELATIVE PERCENT]
+      ,[LYMPHOCYTE RELATIVE PERCENT]
+      ,[MONOCYTES ABSOLUTE COUNT]
+      ,[EOSINOPHILS, ABSOLUTE COUNT]
+      ,CAST([PULSE] as Float) as 'PULSE'
+      ,CAST([PULSE OXIMETRY] as Float) as 'PULSE OXIMETRY'
+      ,CAST([RESPIRATIONS] as Float) as 'RESPIRATIONS'
+      ,CAST([TEMPERATURE] as Float) 'TEMPERATURE'
+      ,CAST([CPM S16 R AS PAIN RATING (0-10): REST] as Float) as 'PAIN RATING'
+      ,CAST([R MAINTENANCE IV VOLUME] as Float) as 'IV VOL'
+	  ,CAST([ORAL INTAKE] as Float) as 'ORAL INTAKE'
+      ,[BLOOD PRESSURE (SYSTOLIC)]
+      ,[BLOOD PRESSURE (DIASTOLIC)]
+      ,[MUSC R SC PHLEBITIS IV DEVICE (TRANSFORMED)]
+      ,[MUSC R AS SC INFILTRATION IV DEVICE (TRANSFORMED)]
+      ,[R ARTERIAL LINE BLOOD PRESSURE (SYSTOLIC)]
+      ,[R ARTERIAL LINE BLOOD PRESSURE (DIASTOLIC)]
+      ,[CPM S16 R AS SC RASS (RICHMOND AGITATION-SEDATION SCALE) (TRANSFORMED)]
+      ,[MUSC IP R AVPU (TRANSFORMED)]
+      ,[MetTemp]
+      ,[MetHR]
+      ,[MetRR]
+      ,[MetWBC]
+      ,[MaxTemp8]
+      ,[MaxTemp24]
+      ,[MaxTemp48]
+      ,[MaxHR8]
+      ,[MaxHR24]
+      ,[MaxHR48]
+      ,[MaxRR8]
+      ,[MaxRR24]
+      ,[MaxRR48]
+      ,[MaxWBC8]
+      ,[MaxWBC24]
+      ,[MaxWBC48]
+      ,[MinTemp8]
+      ,[MinTemp24]
+      ,[MinTemp48]
+      ,[MinHR8]
+      ,[MinHR24]
+      ,[MinHR48]
+      ,[MinRR8]
+      ,[MinRR24]
+      ,[MinRR48]
+      ,[MinWBC8]
+      ,[MinWBC24]
+      ,[MinWBC48]
+      ,[MetSIRS4_8]
+      ,[MetSIRS4_24]
+      ,[MetSIRS4_48]
+      ,[MetSIRS4_4hr_8]
+      ,[MetSIRS4_4hr_24]
+      ,[MetSIRS4_4hr_48]
+	   ,CASE WHEN drg.DRGNumber =  'MS870' THEN 1 Else 0 END AS MS870
+	   ,CASE WHEN drg.DRGNumber =  'MS871' THEN 1 Else 0 END AS MS871
+	   ,CASE WHEN drg.DRGNumber =  'MS872' THEN 1 Else 0 END AS MS872
+	   ,CASE WHEN drg.DRGNumber  in ( 'MS870', 'MS871', 'MS872') THEN 1 Else 0 END AS Sepsis_DRG
+
+
+FROM [StatisticalModels].[dbo].[InpatientPipelineLabsVitals] as iplv
+	left join
+		UMAOLAP.fact.InpatientAdmission as ipa on
+		iplv.PAT_ENC_CSN_ID = ipa.PatEncCSNID
+	left join
+		UMAOLAP.dim.DRG as drg on
+		ipa.MSDRGKey = drg.DRGKey
+
+where  drg.DRGNumber != '-1' and ipa.MSDRGWeight is not Null and AGE > 17
